@@ -1,0 +1,30 @@
+---
+- name: Converge
+  hosts: all
+
+  vars:
+    ansible_user: "root"
+
+  pre_tasks:
+    - name: Install prerequisites for the role.
+      become: true
+      ansible.builtin.dnf:
+        name:
+          - policycoreutils-python-utils
+          - podman
+          - crun
+          - systemd-container
+        state: present
+
+    - name: Create podman system user.
+      become: true
+      ansible.builtin.user:
+        name: "podman"
+        uid: 10000
+        home: "/opt/podman"
+        shell: "/bin/bash"
+        password: "!"
+        create_home: true
+
+  roles:
+    - role: wormt.headscale

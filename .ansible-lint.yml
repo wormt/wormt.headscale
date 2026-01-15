@@ -1,0 +1,9 @@
+---
+profile: 'production'
+
+exclude_paths:
+  - '.github/'
+  - 'docs/'
+
+use_default_rules: true
+offline: true

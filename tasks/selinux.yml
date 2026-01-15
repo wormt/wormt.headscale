@@ -1,0 +1,12 @@
+---
+- name: "Ensure fcontexts for podman user are set."
+  become: true
+  community.general.sefcontext:
+    target: "{{ item.target }}"
+    setype: "{{ item.setype }}"
+    selevel: "s0"
+    state: "present"
+  loop: "{{ __headscale_selinux_fcontexts }}"
+  loop_control:
+    label: "{{ item.target }}"
+  notify: "Apply SELinux file contexts"

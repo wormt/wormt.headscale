@@ -1,0 +1,87 @@
+---
+server_url: {{ __headscale_server_url }}
+listen_addr: 0.0.0.0:443
+metrics_listen_addr: 0.0.0.0:9090
+grpc_listen_addr: 0.0.0.0:50443
+grpc_allow_insecure: false
+noise:
+  private_key_path: /var/lib/headscale/noise_private.key
+prefixes:
+  v4: 100.64.0.0/10
+  v6: fd7a:115c:a1e0::/48
+  allocation: sequential
+derp:
+  server:
+    enabled: true
+    region_id: 999
+    region_code: "headscale"
+    region_name: "Headscale Embedded DERP"
+    verify_clients: true
+    stun_listen_addr: "0.0.0.0:3478"
+    private_key_path: /var/lib/headscale/derp_server_private.key
+    automatically_add_embedded_derp_region: true
+{% if __headscale_derp_ipv4 %}
+    ipv4: {{ __headscale_derp_ipv4 }}
+{% endif %}
+{% if __headscale_derp_ipv6 %}
+    ipv6: {{ __headscale_derp_ipv6 }}
+{% endif %}
+  urls:
+    - https://controlplane.tailscale.com/derpmap/default
+  paths: []
+  auto_update_enabled: true
+  update_frequency: 3h
+disable_check_updates: false
+ephemeral_node_inactivity_timeout: 30m
+database:
+  type: sqlite
+  debug: false
+  gorm:
+    prepare_stmt: true
+    parameterized_queries: true
+    skip_err_record_not_found: true
+    slow_threshold: 1000
+  sqlite:
+    path: /var/lib/headscale/db.sqlite
+    write_ahead_log: true
+    wal_autocheckpoint: 1000
+acme_url: https://acme-v02.api.letsencrypt.org/directory
+acme_email: "{{ __headscale_acme_email }}"
+tls_letsencrypt_hostname: "{{ __headscale_server_url | regex_replace('^https?://', '') | regex_replace(':[0-9]+$', '') }}"
+tls_letsencrypt_cache_dir: /var/lib/headscale/cache
+tls_letsencrypt_challenge_type: TLS-ALPN-01
+tls_letsencrypt_listen: ":443"
+log:
+  level: info
+  format: json
+policy:
+{% if __headscale_acl_policy is defined %}
+  mode: file
+  path: /etc/headscale/acl.json
+{% else %}
+  mode: database
+  path: ""
+{% endif %}
+dns:
+  magic_dns: true
+  base_domain: "{{ __headscale_base_domain }}"
+  override_local_dns: true
+  nameservers:
+    global:
+{% for ns in __headscale_dns_nameservers %}
+      - {{ ns }}
+{% endfor %}
+  search_domains: []
+  extra_records:
+{% for record in __headscale_dns_extra_records %}
+    - name: "{{ record.name }}"
+      type: "{{ record.type }}"
+      value: "{{ record.value }}"
+{% endfor %}
+unix_socket: /var/run/headscale/headscale.sock
+unix_socket_permission: "0770"
+taildrop:
+  enabled: true
+logtail:
+  enabled: false
+randomize_client_port: false

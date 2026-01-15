@@ -1,0 +1,48 @@
+---
+- name: Verify
+  hosts: all
+
+  vars:
+    ansible_user: "root"
+
+  tasks:
+    - name: Check headscale config was rendered.
+      ansible.builtin.stat:
+        path: "/opt/podman/headscale/config/config.yaml"
+      register: __verify_config
+
+    - name: Assert config file exists.
+      ansible.builtin.assert:
+        that:
+          - __verify_config.stat.exists
+          - __verify_config.stat.pw_name == "podman"
+          - __verify_config.stat.gr_name == "podman"
+          - __verify_config.stat.mode == "0700"
+
+    - name: Read rendered config.
+      ansible.builtin.slurp:
+        src: "/opt/podman/headscale/config/config.yaml"
+      register: __verify_config_content
+
+    - name: Assert config contains expected values.
+      ansible.builtin.assert:
+        that:
+          - "'server_url: https://head.example.com:443' in __verify_decoded"
+          - "'base_domain: \"example.com\"' in __verify_decoded"
+          - "'magic_dns: true' in __verify_decoded"
+          - "'taildrop:' in __verify_decoded"
+          - "'198.51.100.1' not in __verify_decoded"
+          - "'2001:db8::1' not in __verify_decoded"
+      vars:
+        __verify_decoded: "{{ __verify_config_content.content | b64decode }}"
+
+    - name: Check SELinux fcontexts were set.
+      become: true
+      ansible.builtin.command: semanage fcontext -l
+      register: __verify_fcontexts
+      changed_when: false
+
+    - name: Assert container_var_lib_t fcontext exists.
+      ansible.builtin.assert:
+        that:
+          - "'/opt/podman' in __verify_fcontexts.stdout"

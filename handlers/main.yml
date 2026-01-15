@@ -1,0 +1,6 @@
+---
+- name: "Apply SELinux file contexts"
+  become: true
+  ansible.builtin.command: restorecon -RFv /opt/podman
+  register: __headscale_restorecon
+  changed_when: __headscale_restorecon.stdout | length > 0

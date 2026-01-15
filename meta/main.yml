@@ -1,0 +1,20 @@
+---
+galaxy_info:
+  role_name: headscale
+  author: wormt
+  description: Headscale coordination server deployment via rootless Podman quadlet.
+  license: GPL-3.0-only
+  min_ansible_version: "2.1"
+
+  platforms:
+    - name: Fedora
+      versions:
+        - all
+
+  galaxy_tags:
+    - headscale
+    - tailscale
+    - podman
+    - selinux
+
+dependencies: []

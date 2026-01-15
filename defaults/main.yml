@@ -1,0 +1,87 @@
+---
+__headscale_server_url: "https://head.example.com:443"
+__headscale_acme_email: "wormt@example.com"
+__headscale_base_domain: "example.com"
+__headscale_derp_ipv4: ""
+__headscale_derp_ipv6: ""
+
+__headscale_dns_nameservers:
+  - "9.9.9.9"
+  - "149.112.112.112"
+  - "2620:fe::fe"
+  - "2620:fe::9"
+
+__headscale_dns_extra_records: []
+
+# An empty ACL list denies all traffic.
+__headscale_acl_policy:
+  acls: []
+
+__headscale_config_dest: "/opt/podman/headscale/config/config.yaml"
+
+__headscale_selinux_fcontexts:
+  - target: "/opt/podman(/.*)?"
+    setype: "container_var_lib_t"
+  - target: "/opt/podman/.local/share/containers/overlay(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/overlay-images(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/overlay-layers(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/storage/artifacts(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/storage/overlay(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/storage/overlay-images(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/storage/overlay-layers(/.*)?"
+    setype: "container_ro_file_t"
+  - target: "/opt/podman/.local/share/containers/storage/volumes/[^/]*/.*"
+    setype: "container_file_t"
+
+podman_run_as_user: "podman"
+podman_run_as_group: "podman"
+podman_prune_images: true
+
+podman_quadlet_specs:
+  - name: "headscale"
+    type: "container"
+    file_src: "{{ role_path }}/files/headscale.container"
+
+podman_containers_conf:
+  containers:
+    cgroupns: "private"
+    cgroups: "enabled"
+    default_sysctls:
+      - "net.ipv4.ping_group_range=0 0"
+    env_host: false
+    ipcns: "private"
+    label: true
+    log_driver: "journald"
+    netns: "private"
+    pidns: "private"
+    privileged: false
+    seccomp_profile: "/usr/share/containers/seccomp.json"
+  secrets:
+    driver: "file"
+  network:
+    network_backend: "netavark"
+    firewall_driver: "nftables"
+    default_rootless_network_cmd: "pasta"
+  engine:
+    compression_format: "zstd:chunked"
+    cgroup_manager: "systemd"
+    database_backend: "sqlite"
+    enable_port_reservation: false
+    events_logger: "journald"
+    healthcheck_events: true
+    image_volume_mode: "ignore"
+    runtime: "crun"
+
+podman_policy_json:
+  default:
+    - type: "reject"
+  transports:
+    docker:
+      docker.io/headscale/headscale:
+        - type: "insecureAcceptAnything"

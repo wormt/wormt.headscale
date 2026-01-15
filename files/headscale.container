@@ -1,0 +1,22 @@
+[Unit]
+Description=Headscale Server
+
+[Container]
+ContainerName=headscale
+Image=docker.io/headscale/headscale:latest
+AutoUpdate=registry
+Exec=serve
+PublishPort=443:443/tcp
+PublishPort=50443:50443/tcp
+PublishPort=3478:3478/udp
+HealthCmd=CMD headscale health
+Volume=%h/%N/config:/etc/headscale:Z
+Volume=%h/%N/lib:/var/lib/headscale:Z
+Volume=%h/%N/run:/var/run/headscale:Z
+
+[Service]
+ExecStartPre=mkdir -p %h/%N/config %h/%N/lib %h/%N/run
+Restart=always
+
+[Install]
+WantedBy=default.target

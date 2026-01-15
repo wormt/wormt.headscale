@@ -1,0 +1,4 @@
+---
+- name: "Ensure our Headscale quadlet is configured & running."
+  ansible.builtin.import_role:
+    name: "fedora.linux_system_roles.podman"

@@ -1,0 +1,32 @@
+---
+- name: "Ensure Headscale config directory exists."
+  become: true
+  ansible.builtin.file:
+    path: "{{ __headscale_config_dest | dirname }}"
+    state: "directory"
+    owner: "{{ podman_run_as_user }}"
+    group: "{{ podman_run_as_group }}"
+    mode: "0700"
+
+- name: "Ensure Headscale ACL policy is present."
+  become: true
+  ansible.builtin.copy:
+    content: "{{ __headscale_acl_policy | to_nice_json }}\n"
+    dest: "{{ __headscale_config_dest | dirname }}/acl.json"
+    owner: "{{ podman_run_as_user }}"
+    group: "{{ podman_run_as_group }}"
+    mode: "0600"
+    setype: "container_file_t"
+  when: __headscale_acl_policy is defined
+
+- name: "Ensure our Headscale configuration is present."
+  become: true
+  ansible.builtin.template:
+    src: "config.yaml.j2"
+    dest: "{{ __headscale_config_dest }}"
+    owner: "{{ podman_run_as_user }}"
+    group: "{{ podman_run_as_group }}"
+    mode: "0700"
+    force: true
+    setype: "container_file_t"
+    backup: true

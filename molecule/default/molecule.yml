@@ -1,0 +1,35 @@
+---
+dependency:
+  name: galaxy
+  options:
+    requirements-file: requirements.yml
+driver:
+  name: podman
+  options:
+    managed: false
+    login_cmd_template: "podman exec -ti {instance} bash"
+    ansible_connection_options:
+      ansible_connection: podman
+platforms:
+  - name: instance
+    image: "${MOLECULE_DISTRO:-geerlingguy/docker-rockylinux10-ansible}:latest"
+    command: ""
+    pre_build_image: true
+provisioner:
+  name: ansible
+  config_options:
+    defaults:
+      verbosity: 1
+      force_color: true
+      callbacks_enabled: "timer, profile_tasks, profile_roles"
+      pipelining: true
+  env:
+    PY_COLORS: "1"
+    ANSIBLE_CALLBACK_FORMAT_PRETTY: "true"
+  inventory:
+    group_vars:
+      all:
+        # The test checks generated Podman configuration without a quadlet.
+        podman_quadlet_specs: []
+verifier:
+  name: ansible

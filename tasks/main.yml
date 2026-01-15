@@ -1,0 +1,13 @@
+---
+- name: Load selinux.yml.
+  ansible.builtin.include_tasks: selinux.yml
+  when: ansible_selinux.status is defined and ansible_selinux.status != "disabled"
+
+- name: Flush handlers to apply SELinux contexts before container setup.
+  ansible.builtin.meta: flush_handlers
+
+- name: Load config.yml.
+  ansible.builtin.import_tasks: config.yml
+
+- name: Load podman.yml.
+  ansible.builtin.import_tasks: podman.yml

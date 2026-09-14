@@ -1,0 +1,46 @@
+---
+name: Molecule
+"on": [push, pull_request]
+jobs:
+  lint:
+    runs-on: docker
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run ansible-lint
+        uses: ansible/ansible-lint@main
+        with:
+          requirements_file: "requirements.yml"
+
+  test:
+    needs: lint
+    runs-on: docker
+    strategy:
+      max-parallel: 4
+      matrix:
+        distro:
+          - geerlingguy/docker-rockylinux10-ansible
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: 'wormt.headscale'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip3 install ansible molecule molecule-plugins[podman] podman
+
+      - name: Install galaxy requirements
+        run: |
+          cd wormt.headscale && ansible-galaxy install -r requirements.yml
+
+      - name: Test with molecule
+        run: |
+          cd wormt.headscale && molecule test
+        env:
+          PY_COLORS: '1'
+          ANSIBLE_FORCE_COLOR: '1'
+          MOLECULE_DISTRO: ${{ matrix.distro }}

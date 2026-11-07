@@ -11,6 +11,9 @@ __headscale_dns_nameservers:
   - "2620:fe::fe"
   - "2620:fe::9"
 
+# set this to true if you want to route ALL dns requests through your tailnet
+__headscale_override_local_dns: false
+
 __headscale_dns_extra_records: []
 
 # An empty ACL list denies all traffic.

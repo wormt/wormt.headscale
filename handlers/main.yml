@@ -4,3 +4,12 @@
   ansible.builtin.command: restorecon -RFv /opt/podman
   register: __headscale_restorecon
   changed_when: __headscale_restorecon.stdout | length > 0
+
+- name: "Restart headscale"
+  become: true
+  ansible.builtin.shell:
+    cmd: >-
+      runuser -u {{ podman_run_as_user }} -- env
+      XDG_RUNTIME_DIR=/run/user/$(id -u {{ podman_run_as_user }})
+      systemctl --user restart headscale
+  changed_when: true

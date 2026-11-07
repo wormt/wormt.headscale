@@ -65,7 +65,7 @@ policy:
 dns:
   magic_dns: true
   base_domain: "{{ __headscale_base_domain }}"
-  override_local_dns: true
+  override_local_dns: {{ __headscale_override_local_dns | bool | to_json }}
   nameservers:
     global:
 {% for ns in __headscale_dns_nameservers %}

@@ -32,6 +32,7 @@ Set role variables in inventory or group variables. The main settings are:
 | `__headscale_derp_ipv6` | empty | Public IPv6 address for the embedded DERP server |
 | `__headscale_dns_nameservers` | Quad9 IPv4 and IPv6 addresses | DNS resolvers sent to clients |
 | `__headscale_dns_extra_records` | `[]` | Static MagicDNS records |
+| `__headscale_override_local_dns` | `true` | `dns.override_local_dns`: `true` makes tailnet resolver replace the host's. `false` keeps MagicDNS scoped to the base domain |
 | `__headscale_acl_policy` | `{ "acls": [] }` | ACL policy written to `acl.json` |
 | `__headscale_config_dest` | `/opt/podman/headscale/config/config.yaml` | Rendered configuration path |
 
